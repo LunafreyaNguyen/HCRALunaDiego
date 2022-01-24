@@ -1,0 +1,82 @@
+
+<!--Scripts-->
+<script type="text/javascript" src="https://depts.washington.edu/acelab/proj/dollar/dollar.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+
+<script>
+    var click = false;
+    //On mouse click
+    function onMouseDown(mouseX, mouseY, mouseButton){
+        console.log("clicked with " + mouseButton);
+        click = true;
+
+        // Right click to clear canvas
+        if(mouseButton == 2){
+            var ctx = canvas.getContext('2d');
+            var canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            for(var i = 0; i < canvasData.data.length; i++)
+                canvasData.data[i] = 0;
+            ctx.putImageData(canvasData, 0, 0);
+            console.log("cleared!");
+        }
+    }
+    
+    //On mouse drag
+    function onMouseMove(mouseX, mouseY, mouseButton){
+        //console.log("dragged");
+        //console.log(mouseButton);
+        if(click){
+            var ctx = canvas.getContext('2d');
+            var canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            var index = (mouseX + mouseY * canvas.width) * 4;
+            canvasData.data[index + 0] = 0;    // R
+            canvasData.data[index + 1] = 0;    // G
+            canvasData.data[index + 2] = 0;    // B
+            canvasData.data[index + 3] = 255;    // Alpha
+            ctx.putImageData(canvasData, 0, 0);
+            console.log("drew a pixel");
+        }
+    }    
+
+    //On mouse click let go
+    function onMouseUp(mouseX, mouseY, mouseButton){
+        console.log("unclicked " + mouseButton);
+        click = false;
+    }
+
+    //On window refresh
+    window.addEventListener('load', (event) => {
+        canvas = document.querySelector("canvas");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        console.log("canvas resized to full screen");
+    });
+
+    //On window resize
+    window.addEventListener('resize', function(event) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        console.log("canvas resized to full screen");
+    });
+</script>
+
+<style>
+    body{
+        margin:0px;
+    }
+</style>
+
+<body>
+
+    <!----------------------------------------------------------------------------->
+    <!-- Left click and drag to leave pixels, right click to clear the canvas! ---->
+    <!----------------------------------------------------------------------------->
+
+    <canvas style="background-color: #6b8e23"
+        onmousedown="onMouseDown(event.clientX, event.clientY, event.button)"
+        onmousemove="onMouseMove(event.clientX, event.clientY, event.button)"
+        onmouseup="onMouseUp(event.clientX, event.clientY, event.button)"
+        oncontextmenu="return false;" width="800px" height="800px">
+        <p>Hi Earth.</p>
+    </canvas>
+</body>
