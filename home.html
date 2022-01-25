@@ -5,6 +5,8 @@
 
 <script>
     var click = false;
+    var prevX;
+    var prevY;
     //On mouse click
     function onMouseDown(mouseX, mouseY, mouseButton){
         console.log("clicked with " + mouseButton);
@@ -35,6 +37,15 @@
             canvasData.data[index + 3] = 255;    // Alpha
             ctx.putImageData(canvasData, 0, 0);
             console.log("drew a pixel");
+
+            ctx.beginPath();
+            ctx.moveTo(prevX, prevY);
+            ctx.lineTo(mouseX, mouseY);
+            ctx.lineWidth = "4";
+            ctx.strokeStyle = "black";
+            ctx.stroke();
+            prevX = mouseX;
+            prevY = mouseY;
         }
     }    
 
