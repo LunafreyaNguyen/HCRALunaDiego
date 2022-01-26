@@ -10,13 +10,11 @@
         this.x = xcoord; 
         this.y = ycoord; 
     }
-
     //Stroke Class 
     function Stroke(name, points)
     {
         
     }
-
     function OneDollar()
     {
 
@@ -41,17 +39,29 @@
     
 
     }
-
-    function Resample(points, numPoints)
+    function Resample(points, numPoints)    // Resample the path's points into 'n' evenly spaced positions- returns an array
     {
-
+        var i = pathlength(points)/(n-1); // path points distribution
+        var D = 0; // distance 
+        var resampledPoints = points[0];
+        for(var j = 0; j >= 1; j--){
+            var d = distance(points[j - 1], points[j]); // set current distance between two points in the array
+            if((D + d) >= i){                   //if the total length of the path isn't evenly distributed,
+                var tempX = points[j-1].x + (((i-D)/d) * (points[j].x - points[j-1].x)); // then create a new point at
+                var tempY = points[j-1].y + (((i-D)/d) * (points[j].y - points[j-1].y)); // the correct distance.
+                resampledPoints.push(Point(tempX, tempY));
+                points.splice(j, 0, Point(tempX, tempY));
+                D = 0;                                  // Resets the distance since last point added to zero
+            }
+            else                                        // Else if the points are too close together
+                D = D + d;
+            return resampledPoints;
+        }
     }
-
     function Rotate(points)
     {
 
     }
-    
     function Scale(points)
     {
 
