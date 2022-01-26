@@ -3,7 +3,12 @@
 <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
 
 <script>
-    
+   
+    var click = false;
+    var prevX;
+    var prevY;
+    var points = [];
+ 
     //Points Class
     function Point(xcoord, ycoord)
     {
@@ -20,7 +25,6 @@
     function OneDollar()
     {
 
-        
     this.Stroke = new Array(16);
     this.Stroke[0] = new Stroke("triangle", new Array(new Point(137,139),new Point(135,141),new Point(133,144),new Point(132,146),new Point(130,149),new Point(128,151),new Point(126,155),new Point(123,160),new Point(120,166),new Point(116,171),new Point(112,177),new Point(107,183),new Point(102,188),new Point(100,191),new Point(95,195),new Point(90,199),new Point(86,203),new Point(82,206),new Point(80,209),new Point(75,213),new Point(73,213),new Point(70,216),new Point(67,219),new Point(64,221),new Point(61,223),new Point(60,225),new Point(62,226),new Point(65,225),new Point(67,226),new Point(74,226),new Point(77,227),new Point(85,229),new Point(91,230),new Point(99,231),new Point(108,232),new Point(116,233),new Point(125,233),new Point(134,234),new Point(145,233),new Point(153,232),new Point(160,233),new Point(170,234),new Point(177,235),new Point(179,236),new Point(186,237),new Point(193,238),new Point(198,239),new Point(200,237),new Point(202,239),new Point(204,238),new Point(206,234),new Point(205,230),new Point(202,222),new Point(197,216),new Point(192,207),new Point(186,198),new Point(179,189),new Point(174,183),new Point(170,178),new Point(164,171),new Point(161,168),new Point(154,160),new Point(148,155),new Point(143,150),new Point(138,148),new Point(136,148)));
     this.Stroke[1] = new Stroke("x", new Array(new Point(87,142),new Point(89,145),new Point(91,148),new Point(93,151),new Point(96,155),new Point(98,157),new Point(100,160),new Point(102,162),new Point(106,167),new Point(108,169),new Point(110,171),new Point(115,177),new Point(119,183),new Point(123,189),new Point(127,193),new Point(129,196),new Point(133,200),new Point(137,206),new Point(140,209),new Point(143,212),new Point(146,215),new Point(151,220),new Point(153,222),new Point(155,223),new Point(157,225),new Point(158,223),new Point(157,218),new Point(155,211),new Point(154,208),new Point(152,200),new Point(150,189),new Point(148,179),new Point(147,170),new Point(147,158),new Point(147,148),new Point(147,141),new Point(147,136),new Point(144,135),new Point(142,137),new Point(140,139),new Point(135,145),new Point(131,152),new Point(124,163),new Point(116,177),new Point(108,191),new Point(100,206),new Point(94,217),new Point(91,222),new Point(89,225),new Point(87,226),new Point(87,224)));
@@ -42,30 +46,116 @@
 
     }
 
+    function Recognize()
+    {
+
+    }
+
     function Resample(points, numPoints)
     {
 
     }
 
-    function Rotate(points)
+    function ScaleToSquare(points)
     {
 
+    }
+
+    function TranslateToOrigin(points)
+    {
+
+    }
+
+    // function RotateToZero(points, radians)
+    // {
+
+    // }
+
+    /*
+        Rotates points by a certain degree:
+
+        qx ← (px – cx) COS θ – (py – cy) SIN θ + cx
+        qy ← (px – cx) SIN θ + (py – cy) COS θ + cy
+        
+        Use THETA in radians for simplicity.
+
+    */
+    function RotateBy(points, theta)
+    {
+        
+        var centroid = Centroid(points);
+        var cos = Math.cos(theta);
+        var sin = Math.sin(theta);
+        var rotated = new Array(); //new points after transformation
+
+        for (var i = 0; i < points.length; i++) 
+        {
+
+            var qx = (points[i].X - centroid.X) * cos - (points[i].Y - centroid.Y) * sin + centroid.X
+            var qy = (points[i].X - centroid.X) * sin + (points[i].Y - centroid.Y) * cos + centroid.Y;
+
+            rotated[rotated.length] = new Point(qx, qy);
+        }
+
+        return rotated;
     }
     
-    function Scale(points)
+    /*
+    Finds the centroid of the shape drawn by user. To find centroid:
+        - x_cen = AVG(x_i - x_length)
+        - y_cen = AVG(y_i - y_length)
+    */
+    function FindCentroid(points)
+    {
+        var cenX = 0.0;
+        var cenY = 0.0;
+        //Sums all x/y coords
+        for (var i = 0; i < points.length; i++)
+        {
+            cenX += points[i].X;
+            cenY += points[i].Y;
+        }
+
+        //Calculates average
+        cenX /= points.length;
+        cenY /= points.length;
+
+        //Returns centroid coordinates
+        return new Point(x, y);
+    }
+
+    function DistanceAtBestAngle()
     {
 
     }
 
-    function Translate(points)
+    function DistanceAtAngle()
     {
 
     }
 
-    var click = false;
-    var prevX;
-    var prevY;
-    var points = [];
+    function PathLength(points)
+    {
+        var pathLength = 0.0;
+
+        for (var i = 0; i < points.length; i++) 
+        {
+            pathLength += PointDistance(points[i-1], points[i])
+        }
+
+        return PathLength;
+
+    }
+
+    function PointDistance(a, b)
+    {
+        var distanceX = b.x - a.x;
+        var distanceY = b.y - a.y;
+
+        var distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2))
+
+        return distance;
+    }
 
     //On mouse click
     function onMouseDown(mouseX, mouseY, mouseButton){
