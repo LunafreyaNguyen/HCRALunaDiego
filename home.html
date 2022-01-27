@@ -102,12 +102,6 @@
         this.score = scoreTemp;
     }
 
-    function DistanceAtAngle(points, T, theta){
-        var newPoints = RotateBy(points, theta);
-        var distance = PathDistance(newPoints, T);
-        return distance;
-    }
-
     function PathDistance(A, B)
     {
         var distance = 0.0;
@@ -116,7 +110,7 @@
         }
         return distance / A.length;
     }
-    
+
     function DistanceAtBestAngle(points, template, a, b, dt)
     {
         var x1 = phi * a + (1.0 - phi) * b;
@@ -312,18 +306,6 @@
 
         return PathLength;
 
-    }
-
-    function PathDistance(points1, points2)
-    {
-        var d = 0.0;
-
-        for (var i = 0; i < points1.length; i++)
-        {
-            d += Distance(points1[i], points2[i])
-        }
-        
-        return d;
     }
 
     function Distance(a, b)
