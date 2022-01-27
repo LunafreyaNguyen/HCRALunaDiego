@@ -9,6 +9,15 @@
     var prevY;
     var points = [];
  
+    //Box Class
+    function Box(minx, miny, dx, dy)
+    {
+        thix.x = minx; 
+        this.y = miny;
+        this.width = dx; 
+        this.height = dy;
+    }
+
     //Points Class
     function Point(xcoord, ycoord)
     {
@@ -16,9 +25,29 @@
         this.y = ycoord; 
     }
     //Stroke Class 
+    /*
+    Resample
+    Rotate
+    Scale 
+    Translate
+
+    Then...
+    Recognize
+
+    */
     function Stroke(name, points)
     {
         
+        this.name = name;
+        //Resample points into new array
+        this.points = Resample(points, 64);
+
+        var rads = FindIndictativeAngle(this.points);
+        this.points = RotateBy(this.points, -radians);
+        
+        //Scale
+        //Translate
+
     }
 
     function OneDollar()
@@ -76,14 +105,51 @@
             }
             else                                        // Else if the points are too close together
                 D = D + d;
+
             return resampledPoints;
         }
     }
     
-    
-    function Scale(points)
+    /*
+        SCALE-TO-SQUARE(points, size)
+            B ← BOUNDING-BOX(points)
+            foreach point p in points do
+                qx ← px × (size / Bwidth)
+                qy ← py × (size / Bheight)
+                APPEND(newPoints, q)
+            return newPoints
+    */
+    function ScaleToSquare(points, size)
     {
+        var B = BoundingBox(points);
+	    var scaled = new Array();
 
+	    for (var i = 0; i < points.length; i++) 
+        {
+		    var qx = points[i].X * (size / B.Width);
+		    var qy = points[i].Y * (size / B.Height);
+		    scaled[scaled.length] = new Point(qx, qy);
+	    }
+
+    	return scaled;
+    }
+    //BOUNDINGBOX returns a rectangle according to (minx, miny), (maxx, maxy).
+    function BoundingBox(points)
+    {
+        var minX = +Infinity;
+        var maxX = -Infinity;
+        var minY = +Infinity;
+        var maxY = -Infinity;
+
+	    for (var i = 0; i < points.length; i++) 
+        {
+            minX = Math.min(minX, points[i].x);
+            minY = Math.min(minY, points[i].y);
+            maxX = Math.max(maxX, points[i].x);
+            maxY = Math.max(maxY, points[i].y);
+        }
+        
+	    return new Box(minX, minY, maxX - minX, maxY - minY);
     }
 
     /*
@@ -164,6 +230,15 @@
         return distance;
     }
 
+
+
+
+
+
+
+
+
+
     //On mouse click
     function onMouseDown(mouseX, mouseY, mouseButton){
         console.log("clicked with " + mouseButton);
@@ -173,7 +248,8 @@
         click = true;
 
         // Right click to clear canvas
-        if(mouseButton == 2){
+        if(mouseButton == 2)
+        {
             //Clears the Canvas
             var ctx = canvas.getContext('2d');
             var canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height);
