@@ -74,19 +74,59 @@
 
     }
 
-    function Recognize()
-    {
-
+    function Recognize(points, templates){
+        var b = Infinity;
+        var primeT;
+        for(var T = 0; i < templates.length; T++){
+            var distance = DistanceAtBestAngle(points, templates[T], -45, 45, 90);
+            if(distance < b){
+                b = d;
+                primeT = T;
+            }
+        }
+        var score = 1 - (b / .5 * Math.sqrt(Math.pow(templates.length, 2) + Math.pow(templates.length, 2)));
+        return (primeT, score);
     }
 
-    function DistanceAtBestAngle()
-    {
-        
+    function DistanceAtBestAngle(points, T, theta1, theta2, thetaD){
+        var phi = (.5)*(-1 + Math.sqrt(5)); // Defining phi
+
+        var x1 = phi*theta1 + (1 - phi)*theta2;
+        var f1 = DistanceAtAngle(points, T, x1);
+
+        var x2 = (1 - phi)*theta1 + phi*theta2;
+        var f2 = DistanceAtAngle(points, T, x2);
+
+        while((theta2 - theta1) > thetaD){
+            if(f1 < f2){
+                theta2 = x2;
+                x2 = x1;
+                f2 = f1;
+                x1 = phi*(theta1) + (1-phi)*theta2;
+                f1 = DistanceAtAngle(points, T, x1);
+            }
+            else{
+                theta1 = m1;
+                x1 = x2;
+                f1 = f2;
+                x2 = (1-phi)*(theta1) + phi*theta2;
+                f2 = DistanceAtAngle(points, T, x2);
+            }
+        }
+        return Math.min(f1, f2);
     }
 
-    function DistanceAtAngle()
-    {
-
+    function DistanceAtAngle(points, T, theta){
+        var newPoints = RotateBy(points, theta);
+        var distance = PathDistance(newPoints, T);
+        return distance;
+    }
+    function PathDistance(A, B){
+        var distance = 0.0;
+        for(var i = 0; i < A.length; i++){
+            distance += PointDistance(A[i], B[i]);
+        }
+        return distance / A.length;
     }
 
     function Resample(points, numPoints)
@@ -132,6 +172,16 @@
 	    }
 
     	return scaled;
+    }
+    function TranslateToOrigin(points){
+        var newPoints = [];
+        var center = FindCentroid(points);
+        for(var i = 0; i < points.length; i++){
+            var x = points[i].x - center.x;
+            var y = points[i].y - center.y;
+            newPoints.push(new Point(x, y));
+        }
+        return newPoints;
     }
     //BOUNDINGBOX returns a rectangle according to (minx, miny), (maxx, maxy).
     function BoundingBox(points)
