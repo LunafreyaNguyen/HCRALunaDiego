@@ -51,6 +51,16 @@
 
     }
 
+    function DistanceAtBestAngle()
+    {
+        
+    }
+
+    function DistanceAtAngle()
+    {
+
+    }
+
     function Resample(points, numPoints)
     {
 
@@ -124,14 +134,14 @@
         return new Point(x, y);
     }
 
-    function DistanceAtBestAngle()
+    /*
+        Find the angle betweeen the horizontal and the first points using centroiud
+    */
+    function FindIndictativeAngle(points)
     {
-
-    }
-
-    function DistanceAtAngle()
-    {
-
+        var c = Centroid(points);
+	    
+        return Math.atan2(c.Y - points[0].Y, c.X - points[0].X);
     }
 
     function PathLength(points)
