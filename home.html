@@ -9,6 +9,15 @@
     var prevY;
     var points = [];
  
+    //Box Class
+    function Box(minx, miny, dx, dy)
+    {
+        thix.x = minx; 
+        this.y = miny;
+        this.width = dx; 
+        this.height = dy;
+    }
+
     //Points Class
     function Point(xcoord, ycoord)
     {
@@ -16,10 +25,31 @@
         this.y = ycoord; 
     }
     //Stroke Class 
+    /*
+    Resample
+    Rotate
+    Scale 
+    Translate
+
+    Then...
+    Recognize
+
+    */
     function Stroke(name, points)
     {
         
+        this.name = name;
+        //Resample points into new array
+        this.points = Resample(points, 64);
+
+        var rads = FindIndictativeAngle(this.points);
+        this.points = RotateBy(this.points, -radians);
+        
+        //Scale
+        //Translate
+
     }
+
     function OneDollar()
     {
 
@@ -49,6 +79,16 @@
 
     }
 
+    function DistanceAtBestAngle()
+    {
+        
+    }
+
+    function DistanceAtAngle()
+    {
+
+    }
+
     function Resample(points, numPoints)
     {
         var i = PathLength(points)/(n-1); // path points distribution
@@ -65,22 +105,88 @@
             }
             else                                        // Else if the points are too close together
                 D = D + d;
+
             return resampledPoints;
         }
     }
-    function Rotate(points)
+    
+    /*
+        SCALE-TO-SQUARE(points, size)
+            B ← BOUNDING-BOX(points)
+            foreach point p in points do
+                qx ← px × (size / Bwidth)
+                qy ← py × (size / Bheight)
+                APPEND(newPoints, q)
+            return newPoints
+    */
+    function ScaleToSquare(points, size)
     {
+        var B = BoundingBox(points);
+	    var scaled = new Array();
 
+	    for (var i = 0; i < points.length; i++) 
+        {
+		    var qx = points[i].X * (size / B.Width);
+		    var qy = points[i].Y * (size / B.Height);
+		    scaled[scaled.length] = new Point(qx, qy);
+	    }
+
+    	return scaled;
     }
-    function Scale(points)
+    //BOUNDINGBOX returns a rectangle according to (minx, miny), (maxx, maxy).
+    function BoundingBox(points)
+    {
+        var minX = +Infinity;
+        var maxX = -Infinity;
+        var minY = +Infinity;
+        var maxY = -Infinity;
+
+	    for (var i = 0; i < points.length; i++) 
+        {
+            minX = Math.min(minX, points[i].x);
+            minY = Math.min(minY, points[i].y);
+            maxX = Math.max(maxX, points[i].x);
+            maxY = Math.max(maxY, points[i].y);
+        }
+        
+	    return new Box(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    /*
+    qx ← (px – cx) COS θ – (py – cy) SIN θ + cx
+    qy ← (px – cx) SIN θ + (py – cy) COS θ + cy
+    */
+    function RotateBy(points, rads)
+    {
+        var c = FindCentroid(points);
+        var cos = Math.cos(rads);
+        var sin = Math.sin(rads);
+        var rotated = new Array();
+
+        for (var i = 0; i < points.length; i++) 
+        {
+            
+            //Points rotations
+            var qx = (points[i].x - c.x) * cos - (points[i].y - c.y) * sin + c.x
+            var qy = (points[i].x - c.x) * sin + (points[i].y - c.y) * cos + c.y;
+
+            //Append to new array
+            rotated[rotated.length] = new Point(qx, qy);
+        }
+	    
+        return rotated;
+    }
+
+
+    function FindCentroid(points)
     {
         var cenX = 0.0;
         var cenY = 0.0;
         //Sums all x/y coords
         for (var i = 0; i < points.length; i++)
         {
-            cenX += points[i].X;
-            cenY += points[i].Y;
+            cenX += points[i].x;
+            cenY += points[i].y;
         }
 
         //Calculates average
@@ -91,14 +197,14 @@
         return new Point(x, y);
     }
 
-    function DistanceAtBestAngle()
+    /*
+        Find the angle betweeen the horizontal and the first points using centroid
+    */
+    function FindIndictativeAngle(points)
     {
-
-    }
-
-    function DistanceAtAngle()
-    {
-
+        var c = FindCentroid(points);
+	    
+        return Math.atan2(c.x - points[0].Y, c.x - points[0].x);
     }
 
     function PathLength(points)
@@ -124,6 +230,15 @@
         return distance;
     }
 
+
+
+
+
+
+
+
+
+
     //On mouse click
     function onMouseDown(mouseX, mouseY, mouseButton){
         console.log("clicked with " + mouseButton);
@@ -133,7 +248,8 @@
         click = true;
 
         // Right click to clear canvas
-        if(mouseButton == 2){
+        if(mouseButton == 2)
+        {
             //Clears the Canvas
             var ctx = canvas.getContext('2d');
             var canvasData = ctx.getImageData(0, 0, canvas.width, canvas.height);
