@@ -79,15 +79,38 @@
             return resampledPoints;
         }
     }
-    function Rotate(points)
-    {
-
-    }
+    
     
     function Scale(points)
     {
 
     }
+
+    /*
+    qx ← (px – cx) COS θ – (py – cy) SIN θ + cx
+    qy ← (px – cx) SIN θ + (py – cy) COS θ + cy
+    */
+    function RotateBy(points, rads)
+    {
+        var c = FindCentroid(points);
+        var cos = Math.cos(rads);
+        var sin = Math.sin(rads);
+        var rotated = new Array();
+
+        for (var i = 0; i < points.length; i++) 
+        {
+            
+            //Points rotations
+            var qx = (points[i].x - c.x) * cos - (points[i].y - c.y) * sin + c.x
+            var qy = (points[i].x - c.x) * sin + (points[i].y - c.y) * cos + c.y;
+
+            //Append to new array
+            rotated[rotated.length] = new Point(qx, qy);
+        }
+	    
+        return rotated;
+    }
+
 
     function FindCentroid(points)
     {
