@@ -8,6 +8,10 @@
     var prevX;
     var prevY;
     var points = [];
+    //Golden Ration used for 
+    const phi = 0.5 * (-1.0 + Math.sqrt(5.0)); 
+    const dt = 2.0 * Math.PI / 180.0;
+    const range  = 45.0 * Math.PI / 180.0 ;
  
     //Box Class
     function Box(minx, miny, dx, dy)
@@ -76,14 +80,43 @@
 
     }
 
-    function DistanceAtBestAngle()
+    function DistanceAtBestAngle(points, template, a, b, dt)
     {
-        
+        var x1 = phi * a + (1.0 - phi) * b;
+        var f1 = DistanceAtAngle(points, template, x1);
+        var x2 = (1.0 - phi) * a + phi * b;
+        var f2 = DistanceAtAngle(points, template, x2);
+
+        while (Math.abs(b - a) > dt)
+        {
+
+            if(f1 < f2)
+            {
+                b = x2;
+                x2 = x1;
+                f2 = f1;
+                x1 = phi * a + (1.0 - phi) * b;
+                f1 = DistanceAtAngle(points, template, x1);
+            }
+            else
+            {
+                a= x1;
+                x1 = x2;
+                f1 = f2;
+                x2 = (1.0 - phi) * a + phi * b;
+                f2 = DistanceAtAngle(points, template, x2);
+            }
+
+            return Math.min(f1, f2);
+
+        }
+
     }
 
-    function DistanceAtAngle()
+    function DistanceAtAngle(points, template, rads)
     {
-
+        var newpoints = RotateBy(points, rads);
+    	return PathDistance(newpoints, template.Points);
     }
 
     function Resample(points, numPoints)
@@ -229,19 +262,31 @@
 
         for (var i = 0; i < points.length; i++) 
         {
-            pathLength += PointDistance(points[i-1], points[i])
+            pathLength += Distance(points[i-1], points[i]);
         }
 
         return PathLength;
 
     }
 
-    function PointDistance(a, b)
+    function PathDistance(points1, points2)
+    {
+        var d = 0.0;
+
+        for (var i = 0; i < points1.length; i++)
+        {
+            d += Distance(points1[i], points2[i])
+        }
+        
+        return d;
+    }
+
+    function Distance(a, b)
     {
         var distanceX = b.x - a.x;
         var distanceY = b.y - a.y;
 
-        var distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2))
+        var distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
 
         return distance;
     }
