@@ -20,6 +20,7 @@
     {
         
     }
+
     function OneDollar()
     {
 
@@ -82,15 +83,21 @@
     {
 
     }
+    
     function Scale(points)
+    {
+
+    }
+
+    function FindCentroid(points)
     {
         var cenX = 0.0;
         var cenY = 0.0;
         //Sums all x/y coords
         for (var i = 0; i < points.length; i++)
         {
-            cenX += points[i].X;
-            cenY += points[i].Y;
+            cenX += points[i].x;
+            cenY += points[i].y;
         }
 
         //Calculates average
@@ -102,13 +109,13 @@
     }
 
     /*
-        Find the angle betweeen the horizontal and the first points using centroiud
+        Find the angle betweeen the horizontal and the first points using centroid
     */
     function FindIndictativeAngle(points)
     {
-        var c = Centroid(points);
+        var c = FindCentroid(points);
 	    
-        return Math.atan2(c.Y - points[0].Y, c.X - points[0].X);
+        return Math.atan2(c.x - points[0].Y, c.x - points[0].x);
     }
 
     function PathLength(points)
