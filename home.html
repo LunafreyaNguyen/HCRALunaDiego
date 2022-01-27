@@ -96,12 +96,66 @@
     }
 }
 
+<<<<<<< HEAD
     function OutputResult(bestTemp, scoreTemp)
     {
         this.name = bestTemp;
         this.score = scoreTemp;
+=======
+    function Recognize(points, templates){
+        var b = Infinity;
+        var primeT;
+        for(var T = 0; i < templates.length; T++){
+            var distance = DistanceAtBestAngle(points, templates[T], -45, 45, 90);
+            if(distance < b){
+                b = d;
+                primeT = T;
+            }
+        }
+        var score = 1 - (b / .5 * Math.sqrt(Math.pow(templates.length, 2) + Math.pow(templates.length, 2)));
+        return (primeT, score);
     }
 
+    function DistanceAtBestAngle(points, T, theta1, theta2, thetaD){
+        var phi = (.5)*(-1 + Math.sqrt(5)); // Defining phi
+
+        var x1 = phi*theta1 + (1 - phi)*theta2;
+        var f1 = DistanceAtAngle(points, T, x1);
+
+        var x2 = (1 - phi)*theta1 + phi*theta2;
+        var f2 = DistanceAtAngle(points, T, x2);
+
+        while((theta2 - theta1) > thetaD){
+            if(f1 < f2){
+                theta2 = x2;
+                x2 = x1;
+                f2 = f1;
+                x1 = phi*(theta1) + (1-phi)*theta2;
+                f1 = DistanceAtAngle(points, T, x1);
+            }
+            else{
+                theta1 = m1;
+                x1 = x2;
+                f1 = f2;
+                x2 = (1-phi)*(theta1) + phi*theta2;
+                f2 = DistanceAtAngle(points, T, x2);
+            }
+        }
+        return Math.min(f1, f2);
+>>>>>>> 1ecb145b71c114a0c961cb7de878d624f2d179c3
+    }
+
+    function DistanceAtAngle(points, T, theta){
+        var newPoints = RotateBy(points, theta);
+        var distance = PathDistance(newPoints, T);
+        return distance;
+    }
+    function PathDistance(A, B){
+        var distance = 0.0;
+        for(var i = 0; i < A.length; i++){
+            distance += PointDistance(A[i], B[i]);
+        }
+        return distance / A.length;
     function DistanceAtBestAngle(points, template, a, b, dt)
     {
         var x1 = phi * a + (1.0 - phi) * b;
@@ -141,11 +195,11 @@
 
     function Resample(points, numPoints)
     {
-        var i = pathlength(points)/(n-1); // path points distribution
+        var i = PathLength(points)/(n-1); // path points distribution
         var D = 0; // distance 
         var resampledPoints = points[0];
         for(var j = 0; j >= 1; j--){
-            var d = distance(points[j - 1], points[j]); // set current distance between two points in the array
+            var d = PointDistance(points[j - 1], points[j]); // set current distance between two points in the array
             if((D + d) >= i){                   //if the total length of the path isn't evenly distributed,
                 var tempX = points[j-1].x + (((i-D)/d) * (points[j].x - points[j-1].x)); // then create a new point at
                 var tempY = points[j-1].y + (((i-D)/d) * (points[j].y - points[j-1].y)); // the correct distance.
@@ -182,6 +236,16 @@
 	    }
 
     	return scaled;
+    }
+    function TranslateToOrigin(points){
+        var newPoints = [];
+        var center = FindCentroid(points);
+        for(var i = 0; i < points.length; i++){
+            var x = points[i].x - center.x;
+            var y = points[i].y - center.y;
+            newPoints.push(new Point(x, y));
+        }
+        return newPoints;
     }
     
     function TranslateToOrigin(points)
@@ -401,4 +465,3 @@
         <p>Hi Earth.</p>
     </canvas>
 </body>
-
