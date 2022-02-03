@@ -475,11 +475,11 @@
                         var guess = results[0];
                         var score = results[1];
                         if(results[2] == "right"){
-                            userScores[User] = userScores[User] + 1;
+                            userScores[User-2] = userScores[User-2] + 1;
                         }
                     }
                 }
-                userScores[User] = userScores[User] / 100;
+                userScores[User-2] = userScores[User-2] / 100;
             }
             console.log(userScores);
          });
