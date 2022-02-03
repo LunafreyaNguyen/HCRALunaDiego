@@ -117,7 +117,6 @@
             }
             var score = (1.0 - bestDistance) / (0.5 * Math.sqrt((250.0 * 250.0) + (250.0 * 250.0)));
             return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
-            //return (templateIndex == -1) ? new OutputResult("No match.", 0.0) : new OutputResult(oneDollar.Strokes[templateIndex].name, score);
         }
     }
 
@@ -375,7 +374,7 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         points = [];
-            // Reading in files
+        // Reading in files
         const selectedFiles = document.getElementById('inputButton');
         const list = document.getElementById('inputButton');
         var xmlLogs = [];
@@ -414,15 +413,15 @@
 
     });
 
+    //On file upload
+    
+
     //On window resize
     window.addEventListener('resize', function(event) {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         points = [];
     });
-
-
-
 </script>
 
 <style>
@@ -430,6 +429,7 @@
     {
         margin:0px;
         position: absolute;
+        font-family: Arial, Helvetica, sans-serif;
     }
     p
     {
@@ -439,8 +439,7 @@
         z-index: 4;
         position: absolute;
         text-align: center;
-        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-        font-size: xx-large;
+   
     }
     #inputButton
     {
