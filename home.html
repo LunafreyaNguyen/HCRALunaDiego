@@ -9,8 +9,8 @@
     var points = [];
     //Golden Ration used for 
     const phi = 0.5 * (-1.0 + Math.sqrt(5.0)); 
-    const dt = 2.0 * Math.PI / 180.0;
-    const range  = 45.0 * Math.PI / 180.0 ;
+    const dt = 2.0 * (Math.PI / 180.0);
+    const range  = 45.0 * (Math.PI / 180.0);
  
     //Box Class
     function Box(minx, miny, dx, dy)
@@ -34,8 +34,22 @@
         constructor(name, points){
         this.name = name;
         //Resample points into new array
+        this.points = points;
         //console.log(this.points);
         this.points = Resample(points, 64);
+        //console.log(this.points);
+        //Calculate indicative angle
+        var rads = FindIndictativeAngle(this.points);
+
+        //Rotate on opposite direction of indicative angle
+        this.points = RotateBy(this.points, -rads);
+        //console.log(this.points);
+
+        //Scale to defined square, following 250 from study
+        this.points = ScaleToSquare(this.points, 250);
+        
+        //Translate points to origin
+        this.points = TranslateToOrigin(this.points);
         }
     }
 
@@ -48,10 +62,22 @@
         this.number = number;
         this.numpts = numpts;
         this.milliseconds = milliseconds;
-
+        
+        //console.log(points);
         //Resample points into new array
-        console.log(points);
-        this.points = Resample(points, 64);
+        var resampledPoints = Resample(points, 64);
+
+        //Calculate indicative angle
+        var rads = FindIndictativeAngle(resampledPoints);
+
+        //Rotate on opposite direction of indicative angle
+        var rotatedPoints = RotateBy(resampledPoints, -rads);
+
+        //Scale to defined square, following 250 from study
+        var scaledPoints = ScaleToSquare(rotatedPoints, 250);
+        
+        //Translate points to origin
+        this.points = TranslateToOrigin(scaledPoints);
         }
     }
 
@@ -104,8 +130,12 @@
     function PathDistance(A, B)
     {
         var distance = 0.0;
-        for(var i = 0; i < A.length; i++){
-            distance = Distance(A[i], B[i]);
+        if(A.length < B.length)
+            var smaller = A.length;
+        else
+            var smaller = B.length;
+        for(var i = 0; i < smaller; i++){
+            distance += Distance(A[i], B[i]);
         }
         return distance / A.length;
     }
@@ -151,11 +181,11 @@
     {
         var I = PathLength(points)/(numPoints-1); // path points distribution
         var D = 0.0; // distance 
-        var resampledPoints = [];
+        var resampledPoints = new Array();
         resampledPoints.push(points[0]);
         for(var i = 1; i < points.length; i++){
             var d = Distance(points[i-1], points[i]); // set current distance between two points in the array
-            if((D + d) >= I){    //if the total length of the path isn't evenly distributed,
+            if((D + d) >= I){                   //if the total length of the path isn't evenly distributed,
                 var tempX = points[i-1].x + ((I-D)/d) * (points[i].x - points[i-1].x); // then create a new point at
                 var tempY = points[i-1].y + ((I-D)/d) * (points[i].y - points[i-1].y); // the correct distance.
                 resampledPoints.push(new Point(tempX, tempY));
@@ -166,10 +196,7 @@
                 D += d;
             }
         }
-        if(resampledPoints.length < numPoints)
-            resampledPoints.push(points[points.length-1]);
-        console.log(resampledPoints.length);
-        return FindIndictativeAngle(resampledPoints);
+        return resampledPoints;
     }
     
     /*
@@ -184,15 +211,16 @@
     function ScaleToSquare(points, size)
     {
         var B = BoundingBox(points);
-	    var scaled = [];
-	    for (var i = 0; i < points.length; i++) {
+	    var scaled = new Array();
+
+	    for (var i = 0; i < points.length; i++) 
+        {
 		    var qx = points[i].x * (size / B.width);
 		    var qy = points[i].y * (size / B.height);
 		    scaled.push(new Point(qx, qy));
 	    }
-    	return TranslateToOrigin(scaled);
+    	return scaled;
     }
-
     function TranslateToOrigin(points){
         var newPoints = [];
         var center = FindCentroid(points);
@@ -203,25 +231,7 @@
         }
         return newPoints;
     }
-    /*
-    function TranslateToOrigin(points)
-    {
-        var c = FindCentroid;
-        var translated = new Array();
-
-        for(var i = 0; i < points.length; i++)
-        {
-            //Points translationsd
-            var qx = (points[i].x - c.x);
-            var qy = (points[i].y - c.y);
-
-            //Append to new array
-            translated[translated.length] = new Point(qx, qy);
-        }
-
-        return translated;
-    }
-    */
+   
     //BOUNDINGBOX returns a rectangle according to (minx, miny), (maxx, maxy).
     function BoundingBox(points)
     {
@@ -250,7 +260,7 @@
         var c = FindCentroid(points);
         var cos = Math.cos(rads);
         var sin = Math.sin(rads);
-        var rotated = [];
+        var rotated = new Array();
 
         for (var i = 0; i < points.length; i++) 
         {
@@ -260,9 +270,10 @@
             var qy = (points[i].x - c.x) * sin + (points[i].y - c.y) * cos + c.y;
 
             //Append to new array
-            rotated.push(new Point(qx, qy));
+            rotated[rotated.length] = new Point(qx, qy);
         }
-        return ScaleToSquare(rotated, 250);
+	    
+        return rotated;
     }
 
     //Find Centroid 
@@ -291,7 +302,8 @@
     function FindIndictativeAngle(points)
     {
         var c = FindCentroid(points);
-        return RotateBy(points, Math.atan2(c.y - points[0].y, c.x - points[0].x));
+	    
+        return Math.atan2(c.y - points[0].y, c.x - points[0].x);
     }
 
     function PathLength(points)
@@ -311,7 +323,8 @@
         var distance = Math.sqrt((distanceX*distanceX) + (distanceY * distanceY));
         return distance;
     }
-
+    
+    //GUI Functions
     //On mouse click
     function onMouseDown(mouseX, mouseY, mouseButton){
         prevX = mouseX;
@@ -386,18 +399,14 @@
                     // First T point = 25
                     // Second X point = prev + 6
                     // etc
-                    var tempPoints = [];
+                    var tempPoints = new Array();
                     for(let i = 0; i < garbageArray[9]; i++){
-                        var tempPoint = new Point;
-                        tempPoint.x = garbageArray[(i*6)+21];
-                        tempPoint.y = garbageArray[((i*6)+2)+21];
-                        tempPoints[i] = tempPoint;
+                        //console.log(i);
+                        tempPoints.push(new Point(garbageArray[(i*6)+21], garbageArray[((i*6)+2)+21]));
                     }
-                    var textTest = JSON.stringify(tempPoints);
-                    tempPoints = JSON.parse(textTest);
-                    console.log(JSON.parse(textTest));
-                    var q = new logs(garbageArray[1], garbageArray[3], garbageArray[5], garbageArray[7], garbageArray[9], garbageArray[11], tempPoints);
-                    //console.log(q);
+                    //console.log(JSON.parse(JSON.stringify(tempPoints)));
+                    var q = new logs(garbageArray[1], garbageArray[3], garbageArray[5], garbageArray[7], garbageArray[9], garbageArray[11], JSON.parse(JSON.stringify(tempPoints)));
+                    console.log(q);
                     xmlLogs.push(q) // REMEMBER THIS
                 };
             }
