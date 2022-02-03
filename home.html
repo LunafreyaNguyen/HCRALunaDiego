@@ -385,7 +385,7 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         points = [];
-            // Reading in files
+        // Reading in files
         const selectedFiles = document.getElementById('inputButton');
         const list = document.getElementById('inputButton');
         //console.log(garbageArray);
@@ -403,29 +403,7 @@
         // etc
         var xmlLogs = [];
         var q;
-        function offlineRecognize(candidate, example){
-            var templateIndex = -1;
-            var bestDistance = +Infinity;
-            var results = [];
-            for(var e = 0; e < example.length; e++){
-                var distance = DistanceAtBestAngle(candidate.points, example[e].points, -range, +range, dt);
-                //console.log(example[e]);
-                if(bestDistance > distance){
-                    bestDistance = distance;
-                    templateIndex = e;
-                }
-            }
-            var score = (1.0 - distance) / (0.5 * Math.sqrt((250.0 * 250.0) + (250.0 * 250.0)));
-            results.push(example[templateIndex]);
-            results.push((100*(1 + score)).toFixed(2));
-            if(example[templateIndex].name == candidate.name)
-                results.push("right");
-            else
-                results.push("wrong");
-            return results;
-            //return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
-            //return (templateIndex == -1) ? new OutputResult("No match.", 0.0) : new OutputResult(oneDollar.Strokes[templateIndex].name, score);
-        }
+       
         selectedFiles.addEventListener('change', (event) => {
             
             for(let xmlFile of Array.from(event.target.files)){
@@ -479,7 +457,7 @@
                                     "left_curly_brace","left_sq_bracket", "pigtail",
                                     "question_mark", "rectangle", "right_curly_bracket",
                                     "right_sq_bracket", "star", "triangle", "v", "x"];
-
+                    //Random 100
                     for(var User = 2; User < 12; User++){
 
                         var E = 1; //(Math.floor(Math.random() * 9)+1);+
@@ -499,8 +477,6 @@
                                 // candidate.push(candidateLogs[gesture]);
                             }
 
-
-
                             for(var candidate = 0; candidate < 16; candidate++){
                                 
                                 var res = offlineRecognize(candidateLogs[candidate], exampleLogs);
@@ -518,7 +494,7 @@
                         }
                        
                         // userScores[User] /= 100         
-                        if (User == 11)
+                        if (User >= 11)
                         {
                             break;
                         }           
