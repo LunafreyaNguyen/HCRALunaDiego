@@ -53,6 +53,34 @@
         }
     }
 
+        //logs Class 
+    class logs {
+        constructor(name, subject, speed, number, numpts, milliseconds, points){
+        this.name = name;
+        this.subject = subject;
+        this.speed = speed;
+        this.number = number;
+        this.numpts = numpts;
+        this.milliseconds = milliseconds;
+
+        //Resample points into new array
+        this.points = points;
+        //console.log(this.points);
+        this.points = Resample(points, 64);
+        //Calculate indicative angle
+        var rads = FindIndictativeAngle(this.points);
+
+        //Rotate on opposite direction of indicative angle
+        this.points = RotateBy(this.points, -rads);
+
+        //Scale to defined square, following 250 from study
+        this.points = ScaleToSquare(this.points, 250);
+        
+        //Translate points to origin
+        this.points = TranslateToOrigin(this.points);
+        }
+    }
+
     class OneDollar {
         constructor(){
             this.Strokes = new Array();
@@ -152,20 +180,20 @@
     function Resample(points, numPoints)
     {
         var I = PathLength(points)/(numPoints-1); // path points distribution
-        var D = 0; // distance 
+        var D = 0.0; // distance 
         var resampledPoints = [];
         resampledPoints.push(points[0]);
         for(var i = 1; i < points.length; i++){
             var d = Distance(points[i-1], points[i]); // set current distance between two points in the array
             if((D + d) >= I){                   //if the total length of the path isn't evenly distributed,
-                var tempX = points[i-1].x + (((I-D)/d) * (points[i].x - points[i-1].x)); // then create a new point at
-                var tempY = points[i-1].y + (((I-D)/d) * (points[i].y - points[i-1].y)); // the correct distance.
+                var tempX = points[i-1].x + ((I-D)/d) * (points[i].x - points[i-1].x); // then create a new point at
+                var tempY = points[i-1].y + ((I-D)/d) * (points[i].y - points[i-1].y); // the correct distance.
                 resampledPoints.push(new Point(tempX, tempY));
                 points.splice(i, 0, new Point(tempX, tempY));
-                D = 0;                                  // Resets the distance since last point added to zero
+                D = 0.0;                                  // Resets the distance since last point added to zero
             }
             else{                                        // Else if the points are too close together
-                D = D + d;
+                D += d;
             }
         }
         return resampledPoints;
@@ -299,13 +327,10 @@
     function PathLength(points)
     {
         var pathLength = 0.0;
-
-        for (var i = 0; i < points.length-1; i++) 
-        {
+        for (var i = 0; i < points.length-1; i++){
             pathLength += Distance(points[i], points[i+1]);
         }
         return pathLength;
-
     }
 
     function Distance(a, b)
@@ -313,8 +338,7 @@
         var distanceX = b.x - a.x;
         var distanceY = b.y - a.y;
 
-        var distance = Math.sqrt(Math.pow(distanceX, 2) + Math.pow(distanceY, 2));
-
+        var distance = Math.sqrt((distanceX*distanceX) + (distanceY * distanceY));
         return distance;
     }
 
@@ -371,13 +395,35 @@
             // Reading in files
         const selectedFiles = document.getElementById('inputButton');
         const list = document.getElementById('inputButton');
-
+        var xmlLogs = [];
         selectedFiles.addEventListener('change', (event) => {
             for(let xmlFile of Array.from(event.target.files)){
                 let fileReader = new FileReader();
                 fileReader.readAsBinaryString(xmlFile);
                 fileReader.onload = function(e) {
-                    console.log(fileReader.result);
+                    let result = fileReader.result;
+                    let garbageArray = (result.slice(60)).split('"');
+                    //console.log(garbageArray);
+                    // FORMATTING
+                    // Gesture Name = 1
+                    // Subject = 3
+                    // Speed = 5
+                    // Number = 7
+                    // NumPts = 9
+                    // Milliseconds = 11
+                    // First X point = 21
+                    // First Y point = 23
+                    // First T point = 25
+                    // Second X point = prev + 6
+                    // etc
+                    var tempPoints = new Array();
+                    for(let i = 0; i < garbageArray[9]; i++){
+                        //console.log(i);
+                            tempPoints.push(new Point(garbageArray[(i*6)+21], garbageArray[((i*6)+2)+21]));
+                    }
+                    console.log(tempPoints);
+                    var q = new logs(garbageArray[1], garbageArray[3], garbageArray[5], garbageArray[7], garbageArray[9], garbageArray[11], tempPoints);
+                    xmlLogs.push(q) // REMEMBER THIS
                 };
             }
          });
