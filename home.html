@@ -367,10 +367,9 @@
         input = new Stroke ("input", points);
         var analyze = new OneDollar;
         var results = analyze.Recognize(input.points, analyze.Strokes, analyze);
-        console.log(results);
+        // console.log(results);
         document.getElementById('results').innerHTML = results;
     }
-
     var downloadURL;
     function arrayToCSV(array){
         var allData = new Blob(array, {type: 'text/plain'});
@@ -389,118 +388,164 @@
             // Reading in files
         const selectedFiles = document.getElementById('inputButton');
         const list = document.getElementById('inputButton');
+        //console.log(garbageArray);
+        // FORMATTING
+        // Gesture Name = 1
+        // Subject = 3
+        // Speed = 5
+        // Number = 7
+        // NumPts = 9
+        // Milliseconds = 11
+        // First X point = 21
+        // First Y point = 23
+        // First T point = 25
+        // Second X point = prev + 6
+        // etc
         var xmlLogs = [];
+        var q;
+        function offlineRecognize(candidate, example){
+            var templateIndex = -1;
+            var bestDistance = +Infinity;
+            var results = [];
+            for(var e = 0; e < example.length; e++){
+                var distance = DistanceAtBestAngle(candidate.points, example[e].points, -range, +range, dt);
+                //console.log(example[e]);
+                if(bestDistance > distance){
+                    bestDistance = distance;
+                    templateIndex = e;
+                }
+            }
+            var score = (1.0 - distance) / (0.5 * Math.sqrt((250.0 * 250.0) + (250.0 * 250.0)));
+            results.push(example[templateIndex]);
+            results.push((100*(1 + score)).toFixed(2));
+            if(example[templateIndex].name == candidate.name)
+                results.push("right");
+            else
+                results.push("wrong");
+            return results;
+            //return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
+            //return (templateIndex == -1) ? new OutputResult("No match.", 0.0) : new OutputResult(oneDollar.Strokes[templateIndex].name, score);
+        }
         selectedFiles.addEventListener('change', (event) => {
+            
             for(let xmlFile of Array.from(event.target.files)){
                 let fileReader = new FileReader();
                 fileReader.readAsBinaryString(xmlFile);
+                let xmlPromise = new Promise(function(resolved, rejected) {
                 fileReader.onload = function(e) {
                     let result = fileReader.result;
                     let garbageArray = (result.slice(60)).split('"');
-                    //console.log(garbageArray);
-                    // FORMATTING
-                    // Gesture Name = 1
-                    // Subject = 3
-                    // Speed = 5
-                    // Number = 7
-                    // NumPts = 9
-                    // Milliseconds = 11
-                    // First X point = 21
-                    // First Y point = 23
-                    // First T point = 25
-                    // Second X point = prev + 6
-                    // etc
                     var tempPoints = new Array();
                     for(let i = 0; i < garbageArray[9]; i++){
                         //console.log(i);
                         tempPoints.push(new Point(garbageArray[(i*6)+21], garbageArray[((i*6)+2)+21]));
                     }
                     //console.log(JSON.parse(JSON.stringify(tempPoints)));
-                    var q = new logs(garbageArray[1], garbageArray[3], garbageArray[5], garbageArray[7], garbageArray[9], garbageArray[11], tempPoints);
-                    xmlLogs.push(q); // REMEMBER THIS
+                    q = new logs(garbageArray[1], garbageArray[3], garbageArray[5], garbageArray[7], garbageArray[9], garbageArray[11], tempPoints);
+                    xmlLogs.push(q) // REMEMBER THIS
+                    if(xmlLogs.length > 159){
+                        resolved("did it");
+                    }
                 };
-            }
-            points = xmlLogs;
-            console.log(points[2]);
-            
-            var candidateLogs = [];
-            var exampleLogs = [];
+                });
+                xmlPromise.then(
+                    function(value){
+                    //all gesture names
+                   
+                    var userScores = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                    var candidateLogs = [];
+                    var exampleLogs = [];
 
-            var Gestures = ["arrow", "caret", "check", "circle", "delete_mark",
-                            "left_curly_brace","left_sq_bracket", "pigtail",
-                            "question_mark", "rectangle", "right_curly_bracket",
-                            "right_sq_bracket", "star", "triangle", "v", "x"];
+                    var Gestures = ["arrow", "caret", "check", "circle", "delete_mark",
+                                    "left_curly_brace","left_sq_bracket", "pigtail",
+                                    "question_mark", "rectangle", "right_curly_bracket",
+                                    "right_sq_bracket", "star", "triangle", "v", "x"];
 
-            for(var User = 2; User < 12; User++){
-                var E = 1; //(Math.floor(Math.random() * 9)+1);+
-                for(var i = 1; i < 101; i++){
-                    for(var gesture = 0; gesture < Gestures.length; gesture++)
-                    {
-                        
+                    for(var User = 0; User < 10; User++){
 
-                        //pick random example log
-                        var offset = 0; 
-                        exampleLogs.push(xmlLogs[Math.floor(Math.random() * 10) + offset]);
-                        //pick random candidate
-                        candidateLogs.push(xmlLogs[Math.floor(Math.random() * 10) + offset]);
-                        offset += 10;
-                    }
-                    for(var candidate = 1; candidate < 11; candidate++){
-                        
-                        var results = offlineRecognize(candidateLogs[candidate - 1], exampleLogs[candidate - 1]);
-                        var guess = results[0];
-                        var score = results[1];
-                        if(results[2] == "right"){
-                            userScores[User-2] += 1;
+                        var E = 1; //(Math.floor(Math.random() * 9)+1);+
+                        for(var i = 0; i < 10; i++){
+
+                            for(var gesture = 0; gesture < 16; gesture++)
+                            {
+                                //pick random example log
+                                var offset = 0; 
+                                exampleLogs.push(xmlLogs[Math.floor(Math.random() * 10) + offset]);
+                                //pick random candidate
+                                candidateLogs.push(xmlLogs[Math.floor(Math.random() * 10) + offset]);
+
+                                offset += 10;
+                            }
+
+                            for(var candidate = 1; candidate < 11; candidate++){
+                                
+                                var results = offlineRecognize(candidateLogs[candidate - 1], exampleLogs);
+                                var guess = results[0];
+                                var score = results[1];
+                                console.log(score);
+                                if(results[2] == "right"){
+                                    userScores[User] += 1;
+                                }
+                            }
+                            console.log("Trial " + i + "/100");
+
+                            candidateLogs = [];
+                            exampleLog = [];
+
                         }
+                        console.log("User " + User + " DONE!");
+                        userScores[User] /= 100
+                    }
+                    console.log(userScores);
+                    // console.log(exampleLogs);
+
+                    function offlineRecognize(candidate, example)
+                    {
+                        var templateIndex = -1;
+                        var bestDistance = +Infinity;
+                        var results = [];
+                        for(var e = 0; e < example.length; e++){
+                            var distance = DistanceAtBestAngle(candidate.points, example[e].points, -range, +range, dt);
+                            //console.log(example[e]);
+                            if(bestDistance > distance){
+                                bestDistance = distance;
+                                templateIndex = e;
+                            }
+                        }
+                        var score = (1.0 - distance) / (0.5 * Math.sqrt((250.0 * 250.0) + (250.0 * 250.0)));
+                        results.push(example[templateIndex]);
+                        results.push((100*(1 + score)).toFixed(2));
+
+                        if(example[templateIndex].name.slice(0, -2) == candidate.name.slice(0, -2))
+                            results.push("right");
+                        else
+                            results.push("wrong");
+                        return results;
+                        //return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
+                        //return (templateIndex == -1) ? new OutputResult("No match.", 0.0) : new OutputResult(oneDollar.Strokes[templateIndex].name, score);
                     }
 
-                    candidateLogs = [];
-                    exampleLog = [];
+                    //all gesture names
+                    
+                    // var offlineDollar = new OneDollar;
+                    // for(var i = 0; i < offlineDollar.Strokes.length; i++){
+                    //     exampleLogs.push(new logs(offlineDollar.Strokes[i].name, "3", "fast", "number", "numpts", "milliseconds", offlineDollar.Strokes[i].points));
+                    // }
+                    // console.log(exampleLogs);
+                    // console.log(xmlLogs);
 
-                }
-                userScores[User-2] /= 100;
+
+
+                    let csvContent = "data:text/csv;charset=utf-8,";
+                    var downloadURL = arrayToCSV(exampleLogs);
+                    link = document.createElement('a');
+                    link.setAttribute('href', downloadURL);
+                    link.setAttribute('download', 'datalog.csv');
+                    //DOWNLOAD link.click();
+                    //console.log(userScores);
+                });
             }
-            // console.log(candidateLogs);
-            // console.log(exampleLogs);
-
-            function offlineRecognize(candidate, example)
-            {
-                var templateIndex = -1;
-                var bestDistance = +Infinity;
-                var results = [];
-                for(var e = 0; e < example.length; e++){
-                    var distance = DistanceAtBestAngle(candidate.points, example[e].points, -range, +range, dt);
-                    //console.log(example[e]);
-                    if(bestDistance > distance){
-                        bestDistance = distance;
-                        templateIndex = e;
-                    }
-                }
-                var score = (1.0 - distance) / (0.5 * Math.sqrt((250.0 * 250.0) + (250.0 * 250.0)));
-                results.push(example[templateIndex]);
-                results.push((100*(1 + score)).toFixed(2));
-
-                if(example[templateIndex].name == candidate.name)
-                    results.push("right");
-                else
-                    results.push("wrong");
-                return results;
-                //return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
-                //return (templateIndex == -1) ? new OutputResult("No match.", 0.0) : new OutputResult(oneDollar.Strokes[templateIndex].name, score);
-            }
-
-            //all gesture names
-            
-            // var offlineDollar = new OneDollar;
-            // for(var i = 0; i < offlineDollar.Strokes.length; i++){
-            //     exampleLogs.push(new logs(offlineDollar.Strokes[i].name, "3", "fast", "number", "numpts", "milliseconds", offlineDollar.Strokes[i].points));
-            // }
-            // console.log(exampleLogs);
-            // console.log(xmlLogs);
-
-           
-         });
+        });
     });
 
     //On window resize
@@ -541,10 +586,21 @@
 
 <body>
 <input id="inputButton" type="file" id="input" webkitdirectory multiple>
+
 <p>Left click and drag to leave pixels, right click to clear the canvas!</p>
 <p  style = "margin-top: 4%;" id="results"></p>
     <!----------------------------------------------------------------------------->
     <!-- Left click and drag to leave pixels, right click to clear the canvas! ---->
+    <!----------------------------------------------------------------------------->
+
+    <canvas style="background-color: #ffffff"
+        onmousedown="onMouseDown(event.clientX, event.clientY, event.button)"
+        onmousemove="onMouseMove(event.clientX, event.clientY, event.button)"
+        onmouseup="onMouseUp(event.clientX, event.clientY, event.button)"
+        oncontextmenu="return false;" width="800px" height="800px">
+        <p>Hi Earth</p>
+    </canvas>
+- Left click and drag to leave pixels, right click to clear the canvas! ---->
     <!----------------------------------------------------------------------------->
 
     <canvas style="background-color: #ffffff"
