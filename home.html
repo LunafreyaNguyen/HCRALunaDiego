@@ -116,7 +116,11 @@
                 //console.log(oneDollar.Strokes[i].name + ": " + d);
             }
             var score = (1.0 - bestDistance) / (0.5 * Math.sqrt((250.0 * 250.0) + (250.0 * 250.0)));
-            return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
+            var results = [];
+            results.push(oneDollar.Strokes[templateIndex].name)
+            results.push((100*(1 + score)).toFixed(2));
+            return results;
+            //return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
             //return (templateIndex == -1) ? new OutputResult("No match.", 0.0) : new OutputResult(oneDollar.Strokes[templateIndex].name, score);
         }
     }
@@ -365,6 +369,15 @@
         document.getElementById('results').innerHTML = results;
     }
 
+    var downloadURL;
+    function arrayToCSV(array){
+        var allData = new Blob(array, {type: 'text/plain'});
+        if(downloadURL !== null)
+            window.URL.revokeObjectURL(downloadURL);
+        downloadURL = window.URL.createObjectURL(allData);
+        return downloadURL;
+    }
+
     //On window refresh
     window.addEventListener('load', (e) => {
         canvas = document.querySelector("canvas");
@@ -402,12 +415,40 @@
                     }
                     //console.log(JSON.parse(JSON.stringify(tempPoints)));
                     var q = new logs(garbageArray[1], garbageArray[3], garbageArray[5], garbageArray[7], garbageArray[9], garbageArray[11], tempPoints);
-                    console.log(q);
                     xmlLogs.push(q) // REMEMBER THIS
                 };
             }
-         });
 
+            //all gesture names
+            var exampleLog = new logs("arrow", "2", "fast", "number", "numpts", "milliseconds", new Array(new Point(68,222),new Point(70,220),new Point(73,218),new Point(75,217),new Point(77,215),new Point(80,213),new Point(82,212),new Point(84,210),new Point(87,209),new Point(89,208),new Point(92,206),new Point(95,204),new Point(101,201),new Point(106,198),new Point(112,194),new Point(118,191),new Point(124,187),new Point(127,186),new Point(132,183),new Point(138,181),new Point(141,180),new Point(146,178),new Point(154,173),new Point(159,171),new Point(161,170),new Point(166,167),new Point(168,167),new Point(171,166),new Point(174,164),new Point(177,162),new Point(180,160),new Point(182,158),new Point(183,156),new Point(181,154),new Point(178,153),new Point(171,153),new Point(164,153),new Point(160,153),new Point(150,154),new Point(147,155),new Point(141,157),new Point(137,158),new Point(135,158),new Point(137,158),new Point(140,157),new Point(143,156),new Point(151,154),new Point(160,152),new Point(170,149),new Point(179,147),new Point(185,145),new Point(192,144),new Point(196,144),new Point(198,144),new Point(200,144),new Point(201,147),new Point(199,149),new Point(194,157),new Point(191,160),new Point(186,167),new Point(180,176),new Point(177,179),new Point(171,187),new Point(169,189),new Point(165,194),new Point(164,196)));
+            var candidateLog = new logs("arrow", "2", "fast", "number", "numpts", "milliseconds", new Array(new Point(68,222),new Point(70,220),new Point(73,218),new Point(75,217),new Point(77,215),new Point(80,213),new Point(82,212),new Point(84,210),new Point(87,209),new Point(89,208),new Point(92,206),new Point(95,204),new Point(101,201),new Point(106,198),new Point(112,194),new Point(118,191),new Point(124,187),new Point(127,186),new Point(132,183),new Point(138,181),new Point(141,180),new Point(146,178),new Point(154,173),new Point(159,171),new Point(161,170),new Point(166,167),new Point(168,167),new Point(171,166),new Point(174,164),new Point(177,162),new Point(180,160),new Point(182,158),new Point(183,156),new Point(181,154),new Point(178,153),new Point(171,153),new Point(164,153),new Point(160,153),new Point(150,154),new Point(147,155),new Point(141,157),new Point(137,158),new Point(135,158),new Point(137,158),new Point(140,157),new Point(143,156),new Point(151,154),new Point(160,152),new Point(170,149),new Point(179,147),new Point(185,145),new Point(192,144),new Point(196,144),new Point(198,144),new Point(200,144),new Point(201,147),new Point(199,149),new Point(194,157),new Point(191,160),new Point(186,167),new Point(180,176),new Point(177,179),new Point(171,187),new Point(169,189),new Point(165,194),new Point(164,196)));
+            var userScores = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+            var Gestures = ["arrow", "caret", "check", "circle", "delete_mark",
+                            "left_curly_brace","left_sq_bracket", "pigtail",
+                            "question_mark", "rectangle", "right_curly_bracket",
+                            "right_sq_bracket", "star", "triangle", "v", "x"];
+            for(var User = 2; User < 12; User++){
+                var E = 1; //(Math.floor(Math.random() * 9)+1);
+                for(var i = 1; i < 101; i++){
+                    for(var gesture = 0; gesture < Gestures.length; gesture++){
+                        //pick random example log
+                        //pick random candidate
+                    }
+                    for(var candidate = 1; candidate < 11; candidate++){
+                        var analyze = new OneDollar;
+                        var results = analyze.Recognize(candidateLog, exampleLog, analyze);
+                        var guess = results[0];
+                        var score = results[1];
+                        if(guess == exampleLog.name){
+                            userScores[User] = userScores[User] + 1;
+                        }
+                    }
+                }
+                userScores[User] = userScores[User] / 100;
+            }
+            console.log(userScores);
+         });
     });
 
     //On window resize
@@ -461,5 +502,4 @@
         oncontextmenu="return false;" width="800px" height="800px">
         <p>Hi Earth</p>
     </canvas>
-    
 </body>
