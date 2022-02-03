@@ -63,21 +63,21 @@
         this.numpts = numpts;
         this.milliseconds = milliseconds;
         
-        //console.log(points);
+        //this.points = points;
         //Resample points into new array
         var resampledPoints = Resample(points, 64);
-
         //Calculate indicative angle
+        //this.points = resampledPoints;
         var rads = FindIndictativeAngle(resampledPoints);
-
         //Rotate on opposite direction of indicative angle
-        var rotatedPoints = RotateBy(resampledPoints, -rads);
-
+        this.points = RotateBy(resampledPoints, -rads);
+        //console.log(this.points);
+            
         //Scale to defined square, following 250 from study
-        var scaledPoints = ScaleToSquare(rotatedPoints, 250);
+        this.points = ScaleToSquare(this.points, 250);
         
         //Translate points to origin
-        this.points = TranslateToOrigin(scaledPoints);
+        this.points = TranslateToOrigin(this.points);
         }
     }
 
@@ -177,24 +177,23 @@
     	return PathDistance(newpoints, template.points);
     }
 
-    function Resample(points, numPoints)
+    function Resample(points, n)
     {
-        var I = PathLength(points)/(numPoints-1); // path points distribution
+        var I = (PathLength(points))/(n-1); // path points distribution
         var D = 0.0; // distance 
-        var resampledPoints = new Array();
+        var resampledPoints = [];
         resampledPoints.push(points[0]);
         for(var i = 1; i < points.length; i++){
-            var d = Distance(points[i-1], points[i]); // set current distance between two points in the array
-            if((D + d) >= I){                   //if the total length of the path isn't evenly distributed,
-                var tempX = points[i-1].x + ((I-D)/d) * (points[i].x - points[i-1].x); // then create a new point at
-                var tempY = points[i-1].y + ((I-D)/d) * (points[i].y - points[i-1].y); // the correct distance.
-                resampledPoints.push(new Point(tempX, tempY));
-                points.splice(i, 0, new Point(tempX, tempY));
-                D = 0.0;                                  // Resets the distance since last point added to zero
+            var d = Distance(points[i-1], points[i]);
+            if((D + d) >= I){
+                var qx = ~~points[i-1].x + ((I - D) / d) * (points[i].x - points[i - 1].x);
+                var qy = ~~points[i-1].y + ((I - D) / d) * (points[i].y - points[i - 1].y);
+                resampledPoints.push(new Point(qx, qy));
+                points.splice(i, 0, new Point(qx, qy));
+                D = 0;
             }
-            else{                                        // Else if the points are too close together
-                D += d;
-            }
+            else
+                D = D + d;
         }
         return resampledPoints;
     }
@@ -215,8 +214,8 @@
 
 	    for (var i = 0; i < points.length; i++) 
         {
-		    var qx = points[i].x * (size / B.width);
-		    var qy = points[i].y * (size / B.height);
+		    var qx = ~~points[i].x * (size / B.width);
+		    var qy = ~~points[i].y * (size / B.height);
 		    scaled.push(new Point(qx, qy));
 	    }
     	return scaled;
@@ -225,8 +224,8 @@
         var newPoints = [];
         var center = FindCentroid(points);
         for(var i = 0; i < points.length; i++){
-            var x = points[i].x - center.x;
-            var y = points[i].y - center.y;
+            var x = ~~points[i].x - center.x;
+            var y = ~~points[i].y - center.y;
             newPoints.push(new Point(x, y));
         }
         return newPoints;
@@ -260,17 +259,14 @@
         var c = FindCentroid(points);
         var cos = Math.cos(rads);
         var sin = Math.sin(rads);
-        var rotated = new Array();
-
+        var rotated = [];
         for (var i = 0; i < points.length; i++) 
         {
-            
             //Points rotations
-            var qx = (points[i].x - c.x) * cos - (points[i].y - c.y) * sin + c.x;
-            var qy = (points[i].x - c.x) * sin + (points[i].y - c.y) * cos + c.y;
-
+            var qx = (~~points[i].x - c.x) * cos - (~~points[i].y - c.y) * sin + c.x;
+            var qy = (~~points[i].x - c.x) * sin + (~~points[i].y - c.y) * cos + c.y;
             //Append to new array
-            rotated[rotated.length] = new Point(qx, qy);
+            rotated.push(new Point(qx, qy));
         }
 	    
         return rotated;
@@ -284,8 +280,8 @@
         //Sums all x/y coords
         for (var i = 0; i < points.length; i++)
         {
-            cenX += points[i].x;
-            cenY += points[i].y;
+            cenX += ~~points[i].x;
+            cenY += ~~points[i].y;
         }
 
         //Calculates average
@@ -303,7 +299,7 @@
     {
         var c = FindCentroid(points);
 	    
-        return Math.atan2(c.y - points[0].y, c.x - points[0].x);
+        return Math.atan2(~~c.y - ~~points[0].y, ~~c.x - ~~points[0].x);
     }
 
     function PathLength(points)
@@ -405,7 +401,7 @@
                         tempPoints.push(new Point(garbageArray[(i*6)+21], garbageArray[((i*6)+2)+21]));
                     }
                     //console.log(JSON.parse(JSON.stringify(tempPoints)));
-                    var q = new logs(garbageArray[1], garbageArray[3], garbageArray[5], garbageArray[7], garbageArray[9], garbageArray[11], JSON.parse(JSON.stringify(tempPoints)));
+                    var q = new logs(garbageArray[1], garbageArray[3], garbageArray[5], garbageArray[7], garbageArray[9], garbageArray[11], tempPoints);
                     console.log(q);
                     xmlLogs.push(q) // REMEMBER THIS
                 };
