@@ -3,7 +3,6 @@
 <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
 
 <script>
-   
     var click = false;
     var prevX;
     var prevY;
@@ -81,17 +80,14 @@
             var bestDistance = +Infinity;
             for (var i = 0; i < oneDollar.Strokes.length; i++)
             {
-                console.log("Recognize: ");
-                console.log(candidate);
                 var d = DistanceAtBestAngle(candidate.points, oneDollar.Strokes[i], -range, +range, dt); 
-                if (d < bestDistance) {
+                if (d <= bestDistance) {
                     bestDistance = d;
-                    templateIndex = i; 
+                    templateIndex = i;
                 }
+                //console.log(oneDollar.Strokes[i].name + ": " + d);
             }
-            var score = (1.0 - bestDistance) / (0.5 * Math.sqrt(250.0 * 250.0 + 250.0 * 250.0));
-            console.log(score);
-            console.log(oneDollar.Strokes[templateIndex].name);
+            var score = (1.0 - bestDistance) / (0.5 * Math.sqrt((250.0 * 250.0) + (250.0 * 250.0)));
             return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
             //return (templateIndex == -1) ? new OutputResult("No match.", 0.0) : new OutputResult(oneDollar.Strokes[templateIndex].name, score);
         }
@@ -118,8 +114,6 @@
 
     function DistanceAtBestAngle(points, template, a, b, dt)
     {
-        console.log(points.length);
-        console.log(template.points.length);
         var x1 = phi * a + (1.0 - phi) * b;
         var f1 = DistanceAtAngle(points, template, x1);
         var x2 = (1.0 - phi) * a + phi * b;
@@ -151,9 +145,7 @@
 
     function DistanceAtAngle(points, template, rads)
     {
-        console.log(points.length);
-        var newpoints = RotateBy(points, rads)
-        console.log(newpoints.length);
+        var newpoints = RotateBy(points, rads);
     	return PathDistance(newpoints, template.points);
     }
 
@@ -371,11 +363,25 @@
     }
 
     //On window refresh
-    window.addEventListener('load', (event) => {
+    window.addEventListener('load', (e) => {
         canvas = document.querySelector("canvas");
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         points = [];
+            // Reading in files
+        const selectedFiles = document.getElementById('inputButton');
+        const list = document.getElementById('inputButton');
+
+        selectedFiles.addEventListener('change', (event) => {
+            for(let xmlFile of Array.from(event.target.files)){
+                let fileReader = new FileReader();
+                fileReader.readAsBinaryString(xmlFile);
+                fileReader.onload = function(e) {
+                    console.log(fileReader.result);
+                };
+            }
+         });
+
     });
 
     //On window resize
@@ -384,6 +390,9 @@
         canvas.height = window.innerHeight;
         points = [];
     });
+
+
+
 </script>
 
 <style>
@@ -403,9 +412,16 @@
         font-family: -apple-system, BlinkMacSystemFont, sans-serif;
         font-size: xx-large;
     }
+    #inputButton
+    {
+        position: absolute;
+        margin-left: 50vw;
+        margin-top: 90vh;
+    }
 </style>
 
 <body>
+<input id="inputButton" type="file" id="input" webkitdirectory multiple>
 <p>Left click and drag to leave pixels, right click to clear the canvas!</p>
 <p  style = "margin-top: 4%;" id="results"></p>
     <!----------------------------------------------------------------------------->
@@ -419,4 +435,5 @@
         oncontextmenu="return false;" width="800px" height="800px">
         <p>Hi Earth</p>
     </canvas>
+    
 </body>
