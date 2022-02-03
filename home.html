@@ -451,8 +451,27 @@
                 xmlPromise.then(
                     function(value){
                     //all gesture names
-                   
-                    var userScores = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+                    
+                
+
+                    var user = [];
+                    var gestureType = [];
+                    var randomIter = [];
+                    var numTrainEx = [];
+                    var totalSizeTrainSet = [];
+                    var trainingSetCont = [];
+                    var candidate = [];
+                    var recoResult = [];
+                    var correctIncorrect = [];
+                    var recoResultScore = [];
+                    var resultBestMatch = [];
+                    var resuleBestSorted = [];
+                    var results = [];
+
+
+                    var averageAccuracy;
+
+                    var fileOutput = [user, gestureType, randomIter, numTrainEx, trainingSetCont, recoResultScore, resuleBestSorted];
                     var candidateLogs = [];
                     var exampleLogs = [];
 
@@ -461,49 +480,60 @@
                                     "question_mark", "rectangle", "right_curly_bracket",
                                     "right_sq_bracket", "star", "triangle", "v", "x"];
 
-                    for(var User = 0; User < 10; User++){
+                    for(var User = 2; User < 12; User++){
 
                         var E = 1; //(Math.floor(Math.random() * 9)+1);+
+                        var count = 1;
                         for(var i = 0; i < 10; i++){
+                            
+                            user.push(User);
+                            randomIter.push(count);
 
                             for(var gesture = 0; gesture < 16; gesture++)
                             {
                                 //pick random example log
-                                var offset = 0; 
-                                exampleLogs.push(xmlLogs[Math.floor(Math.random() * 10) + offset]);
+                                exampleLogs.push(xmlLogs[Math.floor(Math.random() * 10) + (gesture * 10)]);
+                                gestureType.push(exampleLogs[gesture]);
                                 //pick random candidate
-                                candidateLogs.push(xmlLogs[Math.floor(Math.random() * 10) + offset]);
-
-                                offset += 10;
+                                candidateLogs.push(xmlLogs[Math.floor(Math.random() * 10) + (gesture * 10)]);
+                                // candidate.push(candidateLogs[gesture]);
                             }
 
-                            for(var candidate = 1; candidate < 11; candidate++){
+
+
+                            for(var candidate = 0; candidate < 16; candidate++){
                                 
-                                var results = offlineRecognize(candidateLogs[candidate - 1], exampleLogs);
-                                var guess = results[0];
-                                var score = results[1];
-                                console.log(score);
+                                var res = offlineRecognize(candidateLogs[candidate], exampleLogs);
+                                results.push(res);
+                                var guess = res[0];
+                                var score = res[1];                                
                                 if(results[2] == "right"){
-                                    userScores[User] += 1;
+                                    // userScores[User]++;
                                 }
                             }
-                            console.log("Trial " + i + "/100");
 
                             candidateLogs = [];
                             exampleLog = [];
-
+                            count++;
                         }
-                        console.log("User " + User + " DONE!");
-                        userScores[User] /= 100
+                       
+                        // userScores[User] /= 100         
+                        if (User == 11)
+                        {
+                            break;
+                        }           
                     }
-                    console.log(userScores);
-                    // console.log(exampleLogs);
+
+                    console.log(randomIter);
+                    console.log(results);
+
+                  
 
                     function offlineRecognize(candidate, example)
                     {
                         var templateIndex = -1;
                         var bestDistance = +Infinity;
-                        var results = [];
+                        var res = [];
                         for(var e = 0; e < example.length; e++){
                             var distance = DistanceAtBestAngle(candidate.points, example[e].points, -range, +range, dt);
                             //console.log(example[e]);
@@ -513,14 +543,15 @@
                             }
                         }
                         var score = (1.0 - distance) / (0.5 * Math.sqrt((250.0 * 250.0) + (250.0 * 250.0)));
-                        results.push(example[templateIndex]);
-                        results.push((100*(1 + score)).toFixed(2));
+                        res.push(example[templateIndex]);
+                        res.push((100*(1 + score)).toFixed(2));
 
                         if(example[templateIndex].name.slice(0, -2) == candidate.name.slice(0, -2))
-                            results.push("right");
+                            res.push("right");
                         else
-                            results.push("wrong");
-                        return results;
+                            res.push("wrong");
+
+                        return res;
                         //return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
                         //return (templateIndex == -1) ? new OutputResult("No match.", 0.0) : new OutputResult(oneDollar.Strokes[templateIndex].name, score);
                     }
@@ -534,15 +565,23 @@
                     // console.log(exampleLogs);
                     // console.log(xmlLogs);
 
+                    var downloadURL;
+                    function arrayToCSV(array){
+                        var title = "data:text/csv;charset=utf-8,Recognition Log: Lunafreya Nguyen and Diego Batista Cruz // $1 Unistroke Recognizer // Provided XML // USER-DEPENDENT RANDOM-100,,,,,,,,,,,\n";
+                        var columns = "User,GestureType,RandomIteration,numOfTrainingExamples,TotalSizeOfTrainingSet,TrainingSetContents,Candidate,RecoResultGestureType,CorrectIncorrect,RecoResultScore,RecoResultBestMatch,RecoResultNBestSorted\n";
+                        
+                        for (var i = 0; i < 1000; i++)
+                        {
+                            columns += user[i] + "," + gestureType[i].name + "," + randomIter[i] + "," + "1,1" + "," + gestureType[i].name + "," + "candidate" + "," + results[i][0].name + "," + results[i][2] + "," + results[i][1] + "\n";
 
+                        }
+                        
+                        var fileText = title + columns;
+                        return fileText;
+                    }
+                    var download = encodeURI(arrayToCSV(exampleLogs));
+                    window.open(download);
 
-                    let csvContent = "data:text/csv;charset=utf-8,";
-                    var downloadURL = arrayToCSV(exampleLogs);
-                    link = document.createElement('a');
-                    link.setAttribute('href', downloadURL);
-                    link.setAttribute('download', 'datalog.csv');
-                    //DOWNLOAD link.click();
-                    //console.log(userScores);
                 });
             }
         });
