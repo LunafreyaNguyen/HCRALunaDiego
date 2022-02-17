@@ -368,7 +368,21 @@
         ctx.putImageData(canvasData, 0, 0);
         //Clears the Points array
         points = [];
+        if(mouseButton == 2){
+            if(promptNum == 1){
+                promptNum = 9;
+                if(shapeNum != 0)
+                    shapeNum--;
+            }
+            else
+                promptNum--;
+            if(~~promptNum+1 == 11){
+                document.getElementById('prompt').innerHTML = "Left click and drag to leave pixels, right click to clear the canvas and undo last input!\n Please draw " + shapePrompt[shapeNum+1] + " 1."; 
+             }
+            else
+                document.getElementById('prompt').innerHTML = "Left click and drag to leave pixels, right click to clear the canvas and undo last input!\n Please draw " + shapePrompt[shapeNum] + " " + (~~promptNum) + "."; 
 
+        }
     }
     
     //On mouse drag
@@ -388,6 +402,11 @@
         }
     }    
 
+    var promptNum = 1;
+    var shapeNum = 0;
+    var shapePrompt = ["triangle", "x", "rectangle", "circle", "check", "caret", "zig-zag",
+                        "arrow", "left square bracket", "right square bracket", "v", "delete",
+                        "left curly brace", "right curly brace", "star", "pigtail"]
     //On mouse click let go
     function onMouseUp(mouseX, mouseY, mouseButton){
         click = false;
@@ -401,10 +420,21 @@
             }
             return fileData;
         }
-        var download = encodeURI(arrayToCSV(results));
-        window.open(download);
-        console.log(download);
 
+        var download = encodeURI(arrayToCSV(results));
+        console.log(download);
+        document.getElementById('results').innerHTML = "<a download=\"" + promptNum + shapePrompt[shapeNum] + "\" href=\"" + download + "\">Download " + shapePrompt[shapeNum] + " " + promptNum + " data.</a>";
+        if(~~promptNum+1 == 11){
+            document.getElementById('prompt').innerHTML = "Left click and drag to leave pixels, right click to clear the canvas and undo last input!\n Please draw " + shapePrompt[shapeNum+1] + " 1."; 
+        }
+        else
+            document.getElementById('prompt').innerHTML = "Left click and drag to leave pixels, right click to clear the canvas and undo last input!\n Please draw " + shapePrompt[shapeNum] + " " + (~~promptNum+1) + "."; 
+        if(promptNum > 9){
+            shapeNum++;
+            promptNum = 1;
+        }
+        else
+            promptNum++;
     }
     var downloadURL;
     function arrayToCSV(array){
@@ -641,7 +671,7 @@
 <body>
 <input id="inputButton" type="file" id="input" webkitdirectory multiple>
 
-<p>Left click and drag to leave pixels, right click to clear the canvas!</p>
+<p id="prompt">Left click and drag to leave pixels, right click to clear the canvas and undo last input! Please draw triangle 1.</p>
 <p  style = "margin-top: 4%;" id="results"></p>
     <!----------------------------------------------------------------------------->
     <!-- Left click and drag to leave pixels, right click to clear the canvas! ---->
