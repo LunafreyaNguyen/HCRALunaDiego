@@ -32,3 +32,20 @@ Loop Over Dataset (Random100) - Line 460
 Output the Result - Line 544
 
     Output the information necessary about the offline recognition tests int oa .csv file
+
+--PART 4--
+Prompt for Input - Line 426
+
+	Prompted on letting go of one stroke
+
+Right click to clear/redo last prompt - Line 371
+	
+	Makes sure the prmopt number and shape number are correct
+
+Print Array to CSV - Line 416
+
+	In function arrayToCSV, adds all the points separated by commas with x and y points
+
+Download CSV file - Line 424
+
+	Here and below, changes the download link to the most current gesture drawn
