@@ -125,31 +125,6 @@
             //return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
             //return (templateIndex == -1) ? new OutputResult("No match.", 0.0) : new OutputResult(oneDollar.Strokes[templateIndex].name, score);
         }
-        RecognizeSavePoints(points, template, oneDollar)
-        {
-            var candidate = new Stroke("input", points);
-            var templateIndex = -1;
-            var bestDistance = +Infinity;
-            console.log(points);
-            return points;
-            for (var i = 0; i < oneDollar.Strokes.length; i++)
-            {
-                //USERINPUT
-                var d = DistanceAtBestAngle(candidate.points, template[i].points, -range, +range, dt); 
-                if (d <= bestDistance) {
-                    bestDistance = d;
-                    templateIndex = i;
-                }
-                //console.log(oneDollar.Strokes[i].name + ": " + d);
-            }
-            var score = (1.0 - bestDistance) / (0.5 * Math.sqrt((250.0 * 250.0) + (250.0 * 250.0)));
-            var results = [];
-            results.push(oneDollar.Strokes[templateIndex].name)
-            results.push((100*(1 + score)).toFixed(2));
-            return results;
-            //return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
-            //return (templateIndex == -1) ? new OutputResult("No match.", 0.0) : new OutputResult(oneDollar.Strokes[templateIndex].name, score);
-        }
     }
 
     function OutputResult(bestTemp, scoreTemp)
@@ -393,18 +368,9 @@
         click = false;
         input = new Stroke ("input", points);
         var analyze = new OneDollar;
-        var results = analyze.RecognizeSavePoints(input.points, analyze.Strokes, analyze);
-        function arrayToCSV(array){
-            var fileData = "data:text/csv;charset=utf-8\n";       
-            for(var i = 0; i < array.length; i++){
-                fileData += "," + array[i].x + "," + array[i].y;
-            }
-            return fileData;
-        }
-        var download = encodeURI(arrayToCSV(results));
-        window.open(download);
-        console.log(download);
-
+        var results = analyze.Recognize(input.points, analyze.Strokes, analyze);
+        // console.log(results);
+        document.getElementById('results').innerHTML = results;
     }
     var downloadURL;
     function arrayToCSV(array){
