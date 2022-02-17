@@ -1,5 +1,4 @@
 <!--Scripts-->
-<script type="text/javascript" src="https://depts.washington.edu/acelab/proj/dollar/dollar.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
 
 <script>
@@ -106,9 +105,12 @@
             var candidate = new Stroke("input", points);
             var templateIndex = -1;
             var bestDistance = +Infinity;
+            console.log(template);
+            console.log(points);
             for (var i = 0; i < oneDollar.Strokes.length; i++)
             {
-                var d = DistanceAtBestAngle(candidate.points, template.points, -range, +range, dt); 
+                //USERINPUT
+                var d = DistanceAtBestAngle(candidate.points, template[i].points, -range, +range, dt); 
                 if (d <= bestDistance) {
                     bestDistance = d;
                     templateIndex = i;
