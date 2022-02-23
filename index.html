@@ -1,0 +1,35 @@
+<!--Scripts-->
+
+<head> 
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js" integrity="sha256-u7e5khyithlIdTpu22PHhENmPcRdFiHRjhAuHcs05RI=" crossorigin="anonymous"></script>
+<script src="scripts.js" scr></script>
+<link rel="stylesheet" href="stylesheet.css">
+</head>
+
+<body>
+    <input id="inputButton" type="file" id="input" webkitdirectory multiple>
+    
+    <p id="prompt">Left click and drag to leave pixels, right click to clear the canvas and undo last input! Please draw triangle 1.</p>
+    <p  style = "margin-top: 4%;" id="results"></p>
+        <!----------------------------------------------------------------------------->
+        <!-- Left click and drag to leave pixels, right click to clear the canvas! ---->
+        <!----------------------------------------------------------------------------->
+    
+        <canvas style="background-color: #ffffff"
+            onmousedown="onMouseDown(event.clientX, event.clientY, event.button)"
+            onmousemove="onMouseMove(event.clientX, event.clientY, event.button)"
+            onmouseup="onMouseUp(event.clientX, event.clientY, event.button)"
+            oncontextmenu="return false;" width="800px" height="800px">
+            <p>Hi Earth</p>
+        </canvas>
+    - Left click and drag to leave pixels, right click to clear the canvas! ---->
+        <!----------------------------------------------------------------------------->
+    
+        <canvas style="background-color: #ffffff"
+            onmousedown="onMouseDown(event.clientX, event.clientY, event.button)"
+            onmousemove="onMouseMove(event.clientX, event.clientY, event.button)"
+            onmouseup="onMouseUp(event.clientX, event.clientY, event.button)"
+            oncontextmenu="return false;" width="800px" height="800px">
+            <p>Hi Earth</p>
+        </canvas>
+    </body>

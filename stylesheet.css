@@ -1,0 +1,23 @@
+body
+{
+    margin:0px;
+    position: absolute;
+}
+p
+{
+    margin: auto;
+    width: 100%;
+    padding-top: 5%;
+    z-index: 4;
+    position: absolute;
+    text-align: center;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: xx-large;
+}
+#inputButton
+{
+    position: absolute;
+    margin-left: 50vw;
+    margin-top: 90vh;
+}
+
