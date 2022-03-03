@@ -477,10 +477,8 @@ window.addEventListener('load', (e) => {
                 let garbageArray = (result.slice(60)).split('"');
                 var tempPoints = new Array();
                 for(let i = 0; i < garbageArray[9]; i++){
-                    //console.log(i);
                     tempPoints.push(new Point(garbageArray[(i*6)+21], garbageArray[((i*6)+2)+21]));
                 }
-                //console.log(JSON.parse(JSON.stringify(tempPoints)));
                 q = new logs(garbageArray[1], garbageArray[3], garbageArray[5], garbageArray[7], garbageArray[9], garbageArray[11], tempPoints);
                 xmlLogs.push(q) // REMEMBER THIS
                 if(xmlLogs.length > 159){
@@ -491,9 +489,6 @@ window.addEventListener('load', (e) => {
             xmlPromise.then(
                 function(value){
                 //all gesture names
-                
-            
-
                 var user = [];
                 var gestureType = [];
                 var randomIter = [];
@@ -515,57 +510,55 @@ window.addEventListener('load', (e) => {
                 var candidateLogs = [];
                 var exampleLogs = [];
 
+                var resultsArray = [];
                 var Gestures = ["arrow", "caret", "check", "circle", "delete_mark",
                                 "left_curly_brace","left_sq_bracket", "pigtail",
                                 "question_mark", "rectangle", "right_curly_bracket",
                                 "right_sq_bracket", "star", "triangle", "v", "x"];
                 //Random 100
-                for(var User = 2; User < 12; User++){
-
-                    var E = 1; //(Math.floor(Math.random() * 9)+1);+
-                    var count = 1;
-                    for(var i = 0; i < 10; i++){
-                        
-                        user.push(User);
-                        randomIter.push(count);
-
-                        for(var gesture = 0; gesture < 16; gesture++)
-                        {
-                            //pick random example log
-                            exampleLogs.push(xmlLogs[Math.floor(Math.random() * 10) + (gesture * 10)]);
-                            gestureType.push(exampleLogs[gesture]);
-                            //pick random candidate
-                            candidateLogs.push(xmlLogs[Math.floor(Math.random() * 10) + (gesture * 10)]);
-                            // candidate.push(candidateLogs[gesture]);
-                        }
-
-                        for(var candidate = 0; candidate < 16; candidate++){
-                            
-                            var res = offlineRecognize(candidateLogs[candidate], exampleLogs);
-                            results.push(res);
-                            var guess = res[0];
-                            var score = res[1];                                
-                            if(results[2] == "right"){
-                                // userScores[User]++;
+                // for each user U, 1 - 10
+                var iteration = 0;
+                var UserGestureAccuracies = [];
+                for(var User = 0; User < 10; User++){
+                    console.log("User: " + User);
+                    UserGestureAccuracies.push(new Array());
+                    for(var E = 0; E < 9; E++){
+                        var correctCount = 0;
+                        let randomExample = new Array();
+                        for(var x = 0; x < 16; x++)
+                            randomExample.push(new Set());
+                        var correctCount = 0;
+                        for(var i = 0; i < 100; i++){
+                            var trainingExamples = [];
+                            candidateLogs = [];
+                            for(var G = 0; G < 16; G++){
+                                //Choose 1 candidate T from User/Gesture
+                                randomExample[G].add(Math.floor(Math.random() * (10 - 1 + 1) + 1));// First value of the set will be the candidate
+                                //Choose E templates from User/Gesture
+                                candidateLogs.push(xmlLogs[randomExample[G][0]]);
+                                while(randomExample[G].size < E+1)
+                                    randomExample[G].add(Math.floor(Math.random() * (10 - 1 + 1) + 1));
+                                for(var i_trainingExamples = 1; i_trainingExamples < randomExample[G].size; i_trainingExamples++)
+                                    trainingExamples.push(randomExample[G][i_trainingExamples]);
                             }
+                            //For each candidate T from 1 to G
+                            for(var candidate = 0; candidate < randomExample.length; candidate++){
+                                for(var example = 1; example < randomExample[candidate].size; example++){
+                                    iteration++;
+                                    if(offlineRecognize(candidateLogs[candidate], trainingExamples[candidate][example])[2] == 1)
+                                        correctCount++;
+                                    console.log([User, Gestures[candidate], iteration, trainingExamples.size, "User" + User + "_" + Gestures[Candidate] + "-" + trainingExamples, candidateLogs[candidate].name, offlineRecognize(candidateLogs[candidate], trainingExamples[candidate][example])[0], offlineRecognize(candidateLogs[candidate], trainingExamples[candidate][example])[2], offlineRecognize(candidateLogs[candidate], trainingExamples[candidate][example])[1], offlineRecognize(candidateLogs[candidate], trainingExamples[candidate][example])[0], trainingExamples[candidate]]);
+                                    resultsArray.push([User, Gestures[candidate], iteration, trainingExamples.size, "User" + User + "_" + Gestures[Candidate] + "-" + trainingExamples, candidateLogs[candidate].name, offlineRecognize(candidateLogs[candidate], trainingExamples[candidate][example])[0], offlineRecognize(candidateLogs[candidate], trainingExamples[candidate][example])[2], offlineRecognize(candidateLogs[candidate], trainingExamples[candidate][example])[1], offlineRecognize(candidateLogs[candidate], trainingExamples[candidate][example])[0], trainingExamples[candidate]]);
+                                }
+                            }
+                            console.log(iteration);
                         }
-
-                        candidateLogs = [];
-                        exampleLog = [];
-                        count++;
+                        UserGestureAccuracies[User].push(correctCount/100.0);
                     }
-                    
-                    // userScores[User] /= 100         
-                    if (User >= 11)
-                    {
-                        break;
-                    }           
                 }
-
-                console.log(randomIter);
-                console.log(results);
-
-                
+                var download = encodeURI(arrayToCSV(resultsArray));
+                window.open(download);
+                console.log(download);
 
                 function offlineRecognize(candidate, example)
                 {
@@ -585,9 +578,9 @@ window.addEventListener('load', (e) => {
                     res.push((100*(1 + score)).toFixed(2));
 
                     if(example[templateIndex].name.slice(0, -2) == candidate.name.slice(0, -2))
-                        res.push("right");
+                        res.push(1);
                     else
-                        res.push("wrong");
+                        res.push(0);
 
                     return res;
                     //return ("Shape is recognized to be a " + oneDollar.Strokes[templateIndex].name + " with a certainty of " + (100*(1 + score)).toFixed(2) + "%.");
@@ -607,22 +600,17 @@ window.addEventListener('load', (e) => {
                 function arrayToCSV(array){
                     var title = "data:text/csv;charset=utf-8,Recognition Log: Lunafreya Nguyen and Diego Batista Cruz // $1 Unistroke Recognizer // Provided XML // USER-DEPENDENT RANDOM-100,,,,,,,,,,,\n";
                     var columns = "User,GestureType,RandomIteration,numOfTrainingExamples,TotalSizeOfTrainingSet,TrainingSetContents,Candidate,RecoResultGestureType,CorrectIncorrect,RecoResultScore,RecoResultBestMatch,RecoResultNBestSorted\n";
-                    
-                    for (var i = 0; i < 1000; i++)
+                    console.log(array);
+                    for (var i = 0; i < array.length; i++)
                     {
-                        columns += user[i] + "," + gestureType[i].name + "," + randomIter[i] + "," + "10," + "100" + "," + gestureType[i].name + "," + "candidate" + "," + results[i][0].name + "," + results[i][2] + "," + results[i][1] + "," + user[i] + "-" + gestureType[i].name + ",";
-                        for(var x = 0; x < randomIter.length; x++){
-                            columns += gestureType[x].name + " " + results[x][1] + " | ";
-                        }
+                        columns += array[i][0] + "," + array[i][1] + "," + array[i][2] + "," + array[i][3] + array[i][4] + "," + array[i][5] + "," + array[i][6] + "," + array[i][7] + "," + array[i][8] + "," + array[i][9] + "," + array[i][10] + "-" + array[i][11]+ ",";
                         columns += "\b],\n";
+                        console.log(array[i][0] + "," + array[i][1] + "," + array[i][2] + "," + array[i][3] + array[i][4] + "," + array[i][5] + "," + array[i][6] + "," + array[i][7] + "," + array[i][8] + "," + array[i][9] + "," + array[i][10] + "-" + array[i][11]+ ",");
+
                     }
-                    
                     var fileText = title + columns;
                     return fileText;
                 }
-                var download = encodeURI(arrayToCSV(exampleLogs));
-                window.open(download);
-                console.log(download);
             });
         }
     });
